@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Biisi-idea – Demo-sivusto kirjautumisella</title>
+  <style>
+    :root{
+      --bg:#0f172a;        /* slate-900 */
+      --panel:#111827;     /* gray-900 */
+      --muted:#1f2937;     /* gray-800 */
+      --text:#e5e7eb;      /* gray-200 */
+      --accent:#22d3ee;    /* cyan-400 */
+      --accent-2:#38bdf8;  /* sky-400 */
+      --danger:#ef4444;    /* red-500 */
+      --ok:#22c55e;        /* green-500 */
+      --shadow: 0 15px 30px rgba(0,0,0,.35), 0 4px 10px rgba(0,0,0,.25);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(56,189,248,.15), transparent),
+                  radial-gradient(1400px 800px at 120% -20%, rgba(34,211,238,.12), transparent),
+                  var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:980px;margin:0 auto;padding:28px}
+    header{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px
+    }
+    .brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--text)}
+    .logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(145deg,var(--accent),var(--accent-2));display:grid;place-items:center;box-shadow:var(--shadow)}
+    .logo span{font-weight:900;color:#0b1220}
+    .title{font-weight:800;letter-spacing:.3px}
+    .nav-btn{appearance:none;border:0;border-radius:999px;padding:10px 16px;background:var(--muted);color:var(--text);cursor:pointer;box-shadow:var(--shadow);transition:.2s transform,.2s filter}
+    .nav-btn:hover{transform:translateY(-1px);filter:brightness(1.15)}
+    .grid{display:grid;grid-template-columns:1fr;gap:20px}
+    @media(min-width:840px){.grid{grid-template-columns:2fr 1fr}}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));border:1px solid rgba(255,255,255,.08);backdrop-filter: blur(4px); border-radius:var(--radius); box-shadow: var(--shadow)}
+    .card-inner{padding:22px}
+    textarea, input[type="text"], input[type="password"]{
+      width:100%;background:var(--panel);border:1px solid rgba(255,255,255,.1);color:var(--text);padding:14px;border-radius:14px;outline:none
+    }
+    textarea{min-height:160px;resize:vertical}
+    label{display:block;margin:10px 0 8px 0;font-weight:600}
+    .btn{appearance:none;border:0;border-radius:14px;padding:12px 16px;background:linear-gradient(145deg,var(--accent),var(--accent-2));color:#081225;font-weight:800;cursor:pointer;box-shadow:var(--shadow);transition:.2s transform}
+    .btn:hover{transform:translateY(-1px)}
+    .btn.secondary{background:var(--muted);color:var(--text);font-weight:600}
+    .row{display:flex;gap:12px;flex-wrap:wrap}
+    .row .btn{flex:1}
+    .hint{opacity:.85;font-size:.95rem}
+    .badge{display:inline-flex;align-items:center;gap:8px;border:1px dashed rgba(255,255,255,.2);border-radius:999px;padding:8px 12px}
+    .status{margin-top:12px;font-weight:700}
+    .ok{color:var(--ok)}
+    .err{color:var(--danger)}
+    footer{opacity:.7;text-align:center;margin-top:28px}
+    .hidden{display:none !important}
+    .visually-hidden{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
+    a.link{color:var(--accent-2);text-decoration:none}
+    a.link:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="#/" class="brand" id="homeLink" aria-label="Etusivulle">
+        <div class="logo" aria-hidden="true"><span>♫</span></div>
+        <div>
+          <div class="title">Biisi-idea</div>
+          <div style="font-size:.9rem;opacity:.8">Pieni demo-sivusto</div>
+        </div>
+      </a>
+      <div class="row" role="navigation" aria-label="Päänavigaatio">
+        <button class="nav-btn" id="toLoginBtn">Kirjautuminen</button>
+        <button class="nav-btn hidden" id="toSettingsBtn">Tilitiedot</button>
+        <button class="nav-btn hidden" id="logoutBtn">Kirjaudu ulos</button>
+      </div>
+    </header>
+
+    <!-- Etusivu -->
+    <main id="view-home" class="grid">
+      <section class="card" aria-labelledby="ideaTitle">
+        <div class="card-inner">
+          <h1 id="ideaTitle" style="margin:0 0 10px 0">Anna biisi-idea</h1>
+          <p class="hint">Kirjoita vapaasti: teema, tunnelma, soittimet, tempo – mitä vaan.</p>
+          <label for="idea">Biisi-idea</label>
+          <textarea id="idea" placeholder="Esim. nopea synapop kappale neon-90s tunnelmalla, modulaatio C-mollista Eb-duuriin…"></textarea>
+          <div class="row" style="margin-top:12px">
+            <button class="btn" id="saveIdeaBtn">Tallenna idea</button>
+            <button class="btn secondary" id="clearIdeaBtn">Tyhjennä</button>
+          </div>
+          <div id="ideaStatus" class="status" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <aside class="card" aria-labelledby="accountTitle">
+        <div class="card-inner">
+          <h2 id="accountTitle" style="margin:0 0 10px 0">Tili</h2>
+          <p class="hint">Voit kirjautua ja muuttaa käyttäjänimen sekä salasanan kirjautumisen jälkeen.</p>
+          <div class="badge" id="accountBadge"><span>Tilin tila:</span> <strong>Ei kirjautunut</strong></div>
+          <div style="margin-top:12px"><a href="#/login" class="link" id="badgeLoginLink">Siirry kirjautumaan →</a></div>
+        </div>
+      </aside>
+    </main>
+
+    <!-- Kirjautuminen -->
+    <main id="view-login" class="card hidden" style="max-width:560px;margin:0 auto">
+      <div class="card-inner">
+        <h1 style="margin-top:0">Kirjaudu</h1>
+        <p class="hint">Tämä on vain front-end -demo. Älä käytä oikeita tunnuksia.</p>
+        <form id="loginForm">
+          <label for="username">Käyttäjänimi</label>
+          <input id="username" name="username" type="text" autocomplete="username" required />
+          <label for="password" style="margin-top:12px">Salasana</label>
+          <input id="password" name="password" type="password" autocomplete="current-password" required />
+          <div class="row" style="margin-top:16px">
+            <button class="btn" type="submit">Kirjaudu sisään</button>
+            <a class="btn secondary" href="#/">Peruuta</a>
+          </div>
+          <div id="loginStatus" class="status" aria-live="assertive"></div>
+        </form>
+        <p class="hint" style="margin-top:14px">Oletuskäyttäjä: <code>admin</code> / Salasana: <code>admin123</code></p>
+      </div>
+    </main>
+
+    <!-- Tiliasetukset (tunnusten vaihto) -->
+    <main id="view-settings" class="card hidden" style="max-width:640px;margin:0 auto">
+      <div class="card-inner">
+        <h1 style="margin-top:0">Tiliasetukset</h1>
+        <p class="hint">Vaihda käyttäjänimi ja salasana. Tarvitset nykyisen salasanan vahvistukseen.</p>
+        <form id="settingsForm">
+          <fieldset style="border:none;padding:0;margin:0">
+            <legend class="visually-hidden">Tiliasetukset</legend>
+            <label for="currentPassword">Nykyinen salasana</label>
+            <input id="currentPassword" type="password" autocomplete="current-password" required />
+
+            <label for="newUsername" style="margin-top:12px">Uusi käyttäjänimi</label>
+            <input id="newUsername" type="text" autocomplete="username" required />
+
+            <label for="newPassword" style="margin-top:12px">Uusi salasana</label>
+            <input id="newPassword" type="password" autocomplete="new-password" required />
+
+            <label for="confirmPassword" style="margin-top:12px">Vahvista uusi salasana</label>
+            <input id="confirmPassword" type="password" autocomplete="new-password" required />
+
+            <div class="row" style="margin-top:16px">
+              <button class="btn" type="submit">Tallenna muutokset</button>
+              <a class="btn secondary" href="#/">Valmis</a>
+            </div>
+            <div id="settingsStatus" class="status" aria-live="polite"></div>
+          </fieldset>
+        </form>
+      </div>
+    </main>
+
+    <footer>
+      <small>© <span id="year"></span> Biisi-idea – Demo. Ei oikeaa palvelinpuolen kirjautumista.</small>
+    </footer>
+  </div>
+
+  <script>
+    // ------- Yksinkertainen tila ja tallennus (vain demoa varten) -------
+    const LS_KEYS = {
+      creds: 'demo.creds',     // { username, password }
+      session: 'demo.session', // { loggedIn: boolean }
+      idea: 'demo.idea'        // string
+    };
+
+    function getCreds(){
+      let c = JSON.parse(localStorage.getItem(LS_KEYS.creds) || 'null');
+      if(!c){
+        c = { username: 'admin', password: 'admin123' };
+        localStorage.setItem(LS_KEYS.creds, JSON.stringify(c));
+      }
+      return c;
+    }
+    function setCreds(c){ localStorage.setItem(LS_KEYS.creds, JSON.stringify(c)); }
+
+    function getSession(){ return JSON.parse(localStorage.getItem(LS_KEYS.session) || '{"loggedIn":false}'); }
+    function setSession(s){ localStorage.setItem(LS_KEYS.session, JSON.stringify(s)); }
+
+    function updateHeader(){
+      const { loggedIn } = getSession();
+      document.getElementById('toSettingsBtn').classList.toggle('hidden', !loggedIn);
+      document.getElementById('logoutBtn').classList.toggle('hidden', !loggedIn);
+      document.getElementById('toLoginBtn').classList.toggle('hidden', loggedIn);
+
+      const badge = document.getElementById('accountBadge');
+      const creds = getCreds();
+      badge.innerHTML = `<span>Tilin tila:</span> <strong>${loggedIn ? 'Kirjautunut käyttäjänä \''+creds.username+"\'" : 'Ei kirjautunut'}</strong>`;
+      document.getElementById('badgeLoginLink').classList.toggle('hidden', loggedIn);
+    }
+
+    // ------- Reititys (hash) -------
+    const views = {
+      home: document.getElementById('view-home'),
+      login: document.getElementById('view-login'),
+      settings: document.getElementById('view-settings')
+    };
+
+    function show(view){
+      for(const k in views){ views[k].classList.add('hidden'); }
+      views[view].classList.remove('hidden');
+      window.scrollTo({top:0, behavior:'instant'});
+      updateHeader();
+    }
+
+    function route(){
+      const hash = location.hash.replace('#/','');
+      const { loggedIn } = getSession();
+      if(hash === 'login'){ show('login'); return; }
+      if(hash === 'settings'){ show(loggedIn ? 'settings' : 'login'); return; }
+      show('home');
+    }
+
+    window.addEventListener('hashchange', route);
+
+    // ------- Etusivu: biisi-idea -------
+    const ideaEl = document.getElementById('idea');
+    const ideaStatus = document.getElementById('ideaStatus');
+    document.getElementById('saveIdeaBtn').addEventListener('click', () => {
+      const txt = ideaEl.value.trim();
+      localStorage.setItem(LS_KEYS.idea, txt);
+      ideaStatus.textContent = 'Idea tallennettu.';
+      ideaStatus.className = 'status ok';
+      setTimeout(()=>{ideaStatus.textContent='';}, 2000);
+    });
+    document.getElementById('clearIdeaBtn').addEventListener('click', () => {
+      ideaEl.value = '';
+      ideaStatus.textContent = 'Tyhjennetty.';
+      ideaStatus.className = 'status';
+      setTimeout(()=>{ideaStatus.textContent='';}, 1500);
+    });
+
+    // Lataa tallennettu idea
+    ideaEl.value = localStorage.getItem(LS_KEYS.idea) || '';
+
+    // ------- Kirjautuminen -------
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      const creds = getCreds();
+      const status = document.getElementById('loginStatus');
+
+      if(u === creds.username && p === creds.password){
+        setSession({loggedIn:true});
+        status.textContent = 'Kirjautuminen onnistui!';
+        status.className = 'status ok';
+        updateHeader();
+        setTimeout(()=>{ location.hash = '#/settings'; }, 500);
+      } else {
+        status.textContent = 'Väärä käyttäjänimi tai salasana.';
+        status.className = 'status err';
+      }
+    });
+
+    // ------- Tiliasetukset -------
+    document.getElementById('settingsForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const current = document.getElementById('currentPassword').value;
+      const nu = document.getElementById('newUsername').value.trim();
+      const np = document.getElementById('newPassword').value;
+      const cp = document.getElementById('confirmPassword').value;
+      const status = document.getElementById('settingsStatus');
+      const creds = getCreds();
+
+      if(current !== creds.password){
+        status.textContent = 'Nykyinen salasana on väärin.';
+        status.className = 'status err';
+        return;
+      }
+      if(np.length < 6){
+        status.textContent = 'Uuden salasanan tulee olla vähintään 6 merkkiä.';
+        status.className = 'status err';
+        return;
+      }
+      if(np !== cp){
+        status.textContent = 'Salasanat eivät täsmää.';
+        status.className = 'status err';
+        return;
+      }
+      if(nu.length < 3){
+        status.textContent = 'Käyttäjänimen tulee olla vähintään 3 merkkiä.';
+        status.className = 'status err';
+        return;
+      }
+
+      setCreds({ username: nu, password: np });
+      status.textContent = 'Tunnukset päivitetty!';
+      status.className = 'status ok';
+      updateHeader();
+      // Tyhjennä lomake
+      document.getElementById('currentPassword').value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
+    });
+
+    // ------- Yläpalkin napit -------
+    document.getElementById('toLoginBtn').addEventListener('click', () => location.hash = '#/login');
+    document.getElementById('toSettingsBtn').addEventListener('click', () => location.hash = '#/settings');
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      setSession({loggedIn:false});
+      updateHeader();
+      location.hash = '#/';
+    });
+
+    // Vuosi alalaitaan
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Ensimmäinen reititys
+    updateHeader();
+    route();
+  </script>
+</body>
+</html>
