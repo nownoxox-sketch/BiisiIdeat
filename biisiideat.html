@@ -317,3 +317,153 @@
   </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Biisi-idea – Demo-sivusto kirjautumisella</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --panel:#111827;
+      --muted:#1f2937;
+      --text:#e5e7eb;
+      --accent:#22d3ee;
+      --accent-2:#38bdf8;
+      --danger:#ef4444;
+      --ok:#22c55e;
+      --shadow: 0 15px 30px rgba(0,0,0,.35), 0 4px 10px rgba(0,0,0,.25);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:980px;margin:0 auto;padding:28px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:24px}
+    .nav-btn{appearance:none;border:0;border-radius:999px;padding:10px 16px;background:var(--muted);color:var(--text);cursor:pointer;box-shadow:var(--shadow);}
+    .nav-btn.hidden{display:none}
+    .card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px}
+    .card-inner{padding:22px}
+    textarea, input{width:100%;background:#0b1120;border:1px solid #333;color:var(--text);padding:12px;border-radius:12px;}
+    button{margin-top:12px;padding:10px 16px;border:0;border-radius:12px;background:var(--accent);color:#000;font-weight:700;cursor:pointer}
+    button:hover{background:var(--accent-2)}
+    .status{margin-top:10px;font-weight:bold}
+    .ok{color:var(--ok)}
+    .err{color:var(--danger)}
+    .hidden{display:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Biisi-idea Demo</h1>
+      <div>
+        <button class="nav-btn" id="toLoginBtn">Kirjaudu</button>
+        <button class="nav-btn hidden" id="logoutBtn">Kirjaudu ulos</button>
+      </div>
+    </header>
+
+    <!-- Etusivu -->
+    <main id="view-home">
+      <section class="card">
+        <div class="card-inner">
+          <h2>Anna biisi-idea</h2>
+          <textarea id="idea" placeholder="Kirjoita biisi-idea..."></textarea>
+          <button id="saveIdeaBtn">Tallenna idea</button>
+          <button id="clearIdeaBtn">Tyhjennä</button>
+          <div id="ideaStatus" class="status"></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Kirjautuminen -->
+    <main id="view-login" class="card hidden" style="max-width:500px;margin:0 auto">
+      <div class="card-inner">
+        <h2>Kirjaudu sisään</h2>
+        <form id="loginForm">
+          <label for="username">Käyttäjänimi</label>
+          <input id="username" type="text" required />
+          <label for="password">Salasana</label>
+          <input id="password" type="password" required />
+          <button type="submit">Kirjaudu</button>
+          <div id="loginStatus" class="status"></div>
+        </form>
+        <p>Oletustunnukset: <code>admin</code> / <code>admin123</code></p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const LS_KEYS = {
+      idea: 'demo.idea',
+      session: 'demo.session'
+    };
+    const defaultCreds = { username: 'admin', password: 'admin123' };
+
+    function getSession(){ return JSON.parse(localStorage.getItem(LS_KEYS.session) || '{"loggedIn":false}'); }
+    function setSession(s){ localStorage.setItem(LS_KEYS.session, JSON.stringify(s)); }
+
+    function updateHeader(){
+      const { loggedIn } = getSession();
+      document.getElementById('toLoginBtn').classList.toggle('hidden', loggedIn);
+      document.getElementById('logoutBtn').classList.toggle('hidden', !loggedIn);
+    }
+
+    // Reititys
+    function show(view){
+      document.getElementById('view-home').classList.add('hidden');
+      document.getElementById('view-login').classList.add('hidden');
+      document.getElementById(view).classList.remove('hidden');
+      updateHeader();
+    }
+
+    // Etusivun toiminnot
+    const ideaEl = document.getElementById('idea');
+    ideaEl.value = localStorage.getItem(LS_KEYS.idea) || '';
+    document.getElementById('saveIdeaBtn').onclick = () => {
+      localStorage.setItem(LS_KEYS.idea, ideaEl.value);
+      document.getElementById('ideaStatus').textContent = 'Idea tallennettu!';
+      document.getElementById('ideaStatus').className = 'status ok';
+    };
+    document.getElementById('clearIdeaBtn').onclick = () => {
+      ideaEl.value = '';
+      localStorage.removeItem(LS_KEYS.idea);
+      document.getElementById('ideaStatus').textContent = 'Tyhjennetty!';
+      document.getElementById('ideaStatus').className = 'status';
+    };
+
+    // Kirjautuminen
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const u = document.getElementById('username').value;
+      const p = document.getElementById('password').value;
+      const status = document.getElementById('loginStatus');
+
+      if(u === defaultCreds.username && p === defaultCreds.password){
+        status.textContent = 'Kirjautuminen onnistui! Siirrytään...';
+        status.className = 'status ok';
+        setSession({loggedIn:true});
+        setTimeout(() => {
+          // Ohjaa ulkoiseen admin-näkymään
+          window.location.href = 'https://nownoxox-sketch.github.io/BiisiIdeat/adminnäkymä.html#/';
+        }, 1000);
+      } else {
+        status.textContent = 'Väärä käyttäjänimi tai salasana.';
+        status.className = 'status err';
+      }
+    });
+
+    document.getElementById('toLoginBtn').onclick = () => show('view-login');
+    document.getElementById('logoutBtn').onclick = () => { setSession({loggedIn:false}); show('view-home'); };
+
+    updateHeader();
+    show('view-home');
+  </script>
+</body>
+</html>
+
